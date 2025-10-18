@@ -1,0 +1,157 @@
+{% extends 'mailing/base.html' %}
+
+{% block title %}Статистика - Mailing Service{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Статистика рассылок</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Общая статистика -->
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white text-center">
+            <div class="card-body">
+                <h5 class="card-title">Всего рассылок</h5>
+                <h2 class="card-text">{{ total_mailings }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white text-center">
+            <div class="card-body">
+                <h5 class="card-title">Активные</h5>
+                <h2 class="card-text">{{ active_mailings }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-dark text-center">
+            <div class="card-body">
+                <h5 class="card-title">Завершенные</h5>
+                <h2 class="card-text">{{ completed_mailings }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white text-center">
+            <div class="card-body">
+                <h5 class="card-title">Уникальных клиентов</h5>
+                <h2 class="card-text">{{ unique_clients }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Статусы рассылок</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Активность по дням</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Последние рассылки</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Сообщение</th>
+                                <th>Статус</th>
+                                <th>Время начала</th>
+                                <th>Клиентов</th>
+                                <th>Успешных</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mailing in recent_mailings %}
+                            <tr>
+                                <td>{{ mailing.message.subject|truncatewords:5 }}</td>
+                                <td>
+                                    <span class="badge bg-{% if mailing.status == 'completed' %}success{% elif mailing.status == 'running' %}warning{% else %}secondary{% endif %}">
+                                        {{ mailing.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ mailing.start_time|date:"d.m.Y H:i" }}</td>
+                                <td>{{ mailing.clients.count }}</td>
+                                <td>
+                                    {{ mailing.successful_attempts }} / {{ mailing.total_attempts }}
+                                    ({% if mailing.total_attempts > 0 %}{{ mailing.success_rate|floatformat:1 }}%{% else %}0%{% endif %})
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // График статусов
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Активные', 'Завершенные', 'Ошибки'],
+                datasets: [{
+                    data: [{{ active_mailings }}, {{ completed_mailings }}, {{ error_mailings }}],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // График активности (заглушка)
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                datasets: [{
+                    label: 'Отправок',
+                    data: [12, 19, 3, 5, 2, 3, 15],
+                    borderColor: '#007bff',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

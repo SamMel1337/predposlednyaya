@@ -1,0 +1,33 @@
+{% extends 'mailing/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-center">Подтверждение email</h3>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="text-center">
+                    {% if not user.is_authenticated %}
+                        <p class="mb-4">Ваш email успешно подтвержден! Теперь вы можете войти в систему.</p>
+                        <a href="{% url 'users:login' %}" class="btn btn-primary">Войти в систему</a>
+                    {% else %}
+                        <p class="mb-4">Ваш email уже подтвержден.</p>
+                        <a href="{% url 'mailing:mailingattempt_list' %}" class="btn btn-primary">На главную</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

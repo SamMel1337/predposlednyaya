@@ -1,0 +1,48 @@
+{% extends 'mailing/base.html' %}
+
+{% block title %}Сообщения - Mailing Service{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Список сообщений</h1>
+    <a href="{% url 'message_form' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Добавить сообщение
+    </a>
+</div>
+
+<div class="row">
+    {% for message in messages %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ message.subject }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ message.body|truncatewords:30 }}</p>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">
+                        Создано: {{ message.created_at|date:"d.m.Y H:i" }}
+                    </small>
+                    <div>
+                        <a href="{% url 'message_form' message.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'message_confirm_delete' message.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            Сообщения не найдены
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
